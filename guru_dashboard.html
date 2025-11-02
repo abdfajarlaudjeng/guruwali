@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>👨‍🏫 Dashboard Guru Wali</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #fff3e0; color: #e65100; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        h1 { color: #e65100; border-bottom: 2px solid #ffcc80; padding-bottom: 10px; }
+        .data-card { margin-top: 20px; padding: 15px; border: 1px solid #ffcc80; border-radius: 6px; background-color: #fff8e1; }
+        .data-card h3 { color: #e65100; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #ffe0b2; text-align: left; }
+        th { background-color: #ffead1; }
+        .btn-view { background-color: #007bff; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+        .logout-btn { float: right; margin-top: -50px; background-color: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    <h1>👨‍🏫 Dashboard Guru Wali</h1>
+    <p>Selamat Datang, <span id="guruNama">...</span>. Anda mengampu kelas: <strong id="kelasID">...</strong></p>
+    
+    <div id="loading" style="text-align: center; padding: 20px;">Memuat data murid kelas...</div>
+
+    <div class="data-card">
+        <h3>Daftar Murid Kelas Anda</h3>
+        <table id="muridTable">
+            <thead>
+                <tr>
+                    <th>ID Murid</th>
+                    <th>Nama Lengkap</th>
+                    <th>Username</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="muridTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7sWpFBIbCaKSICPm1x9JmPadUYp_NSddI9zA4UQX2KNmIlw-U_M0vwm99hg4hUU0X/exec'; 
+    const USER_ID = localStorage.getItem('userId');
+    const USER_ROLE = localStorage.getItem('userRole');
+    const KELAS_ID = localStorage.getItem('userKelasId'); 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (USER_ROLE !== 'Guru Wali' || !USER_ID || !KELAS_ID) {
+            alert('Akses Ditolak. Silakan login sebagai Guru Wali.');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        document.getElementById('guruNama').textContent = localStorage.getItem('userName');
+        document.getElementById('kelasID').textContent = KELAS_ID;
+        
+        loadMuridData(KELAS_ID);
+    });
+
+    async function fetchData(action, method = 'GET', data = null) {
+        let url = GAS_WEB_APP_URL;
+        let options = {
+            method: method,
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        if (method === 'GET' && data) {
+            // Untuk GET, kirim id_kelas sebagai parameter
+            const params = new URLSearchParams({ action: action, id_kelas: data.id_kelas });
+            url += `?${params.toString()}`;
+        }
+        
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            alert('Gagal berkomunikasi dengan server API: ' + error.message);
+            console.error('Fetch error:', error);
+            return { status: 'error', message: 'Gagal terhubung.' };
+        }
+    }
+
+    async function loadMuridData(id_kelas) {
+        document.getElementById('loading').style.display = 'block';
+        const tbody = document.getElementById('muridTableBody');
+        tbody.innerHTML = '';
+
+        // Panggilan API ke fungsi GAS getKelasMuridData
+        const result = await fetchData('getKelasMuridData', 'GET', { id_kelas: id_kelas }); 
+        
+        document.getElementById('loading').style.display = 'none';
+
+        if (result.status === 'success' && result.data.length > 0) {
+            result.data.forEach(murid => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = murid.id_user;
+                row.insertCell().textContent = murid.nama_lengkap;
+                row.insertCell().textContent = murid.username;
+
+                const actionCell = row.insertCell();
+                const viewButton = document.createElement('button');
+                viewButton.className = 'btn-view';
+                viewButton.textContent = 'Lihat Detail';
+                viewButton.onclick = () => {
+                    alert(`Fitur: Melihat detail Assessment & Bimbingan ${murid.nama_lengkap} (ID: ${murid.id_user})`);
+                };
+                actionCell.appendChild(viewButton);
+            });
+        } else {
+            const row = tbody.insertRow();
+            row.insertCell(0).colSpan = 4;
+            row.cells[0].textContent = result.message || 'Tidak ada murid di kelas ini.';
+        }
+    }
+
+    function logout() {
+        if (confirm("Anda yakin ingin keluar?")) {
+            localStorage.clear();
+            window.location.href = 'index.html'; 
+        }
+    }
+</script>
+</body>
+</html>
