@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Dashboard Siswa</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-lg">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-blue-700">🎓 Dashboard Siswa</h2>
+    <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
+  </div>
+
+  <!-- Profil Siswa -->
+  <div id="profilSection" class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">👤 Profil Siswa</h3>
+    <div id="profilData" class="bg-gray-50 p-4 rounded border border-gray-200"></div>
+  </div>
+
+  <!-- Assessment -->
+  <div id="assessmentSection" class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">📊 Riwayat Assessment</h3>
+    <div id="assessmentList" class="overflow-x-auto bg-gray-50 p-4 rounded border border-gray-200 text-sm"></div>
+  </div>
+
+  <!-- Bimbingan -->
+  <div id="bimbinganSection">
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">🗂️ Riwayat Bimbingan</h3>
+    <div id="bimbinganList" class="overflow-x-auto bg-gray-50 p-4 rounded border border-gray-200 text-sm"></div>
+  </div>
+</div>
+
+<script>
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxIEL2VC6t9ETvOZLHww6_ldWZufZjVbNp19w56IyLH_LzF6q24AehJGYI_QA1GFcmI/exec';
+
+// Cek login
+const userId = localStorage.getItem('userId');
+const userRole = localStorage.getItem('userRole');
+
+if (!userId || userRole !== "Siswa") {
+  alert("Akses ditolak. Silakan login sebagai Siswa.");
+  window.location.href = "index.html";
+}
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.clear();
+  window.location.href = "index.html";
+});
+
+// Ambil data siswa
+async function loadSiswaData() {
+  const payload = { action: "getSiswaData", id_siswa: userId };
+
+  try {
+    const response = await fetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      showProfil(result.profil);
+      showAssessment(result.assessments);
+      showBimbingan(result.bimbingan);
+    } else {
+      document.getElementById("profilData").innerHTML = `<p class='text-red-600'>${result.message}</p>`;
+    }
+  } catch (error) {
+    console.error("Fetch Error:", error);
+    document.getElementById("profilData").innerHTML = `<p class='text-red-600'>Gagal memuat data siswa.</p>`;
+  }
+}
+
+// Tampilkan profil
+function showProfil(p) {
+  document.getElementById("profilData").innerHTML = `
+    <table class="w-full text-sm">
+      <tr><td class="font-semibold w-1/3">ID Siswa</td><td>${p.id_user}</td></tr>
+      <tr><td class="font-semibold">Nama Lengkap</td><td>${p.nama_lengkap}</td></tr>
+      <tr><td class="font-semibold">Kelas</td><td>${p.id_kelas}</td></tr>
+      <tr><td class="font-semibold">Role</td><td>${p.role}</td></tr>
+    </table>
+  `;
+}
+
+// Tampilkan assessment
+function showAssessment(data) {
+  if (!data || data.length === 0) {
+    document.getElementById("assessmentList").innerHTML = `<p class="text-gray-500">Belum ada data assessment.</p>`;
+    return;
+  }
+
+  let html = `<table class="min-w-full border-collapse border text-left">
+                <thead><tr class="bg-blue-100">
+                  ${Object.keys(data[0]).map(h => `<th class="border px-2 py-1">${h}</th>`).join("")}
+                </tr></thead><tbody>`;
+  data.forEach(row => {
+    html += `<tr>${Object.values(row).map(v => `<td class="border px-2 py-1">${v}</td>`).join("")}</tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("assessmentList").innerHTML = html;
+}
+
+// Tampilkan bimbingan
+function showBimbingan(data) {
+  if (!data || data.length === 0) {
+    document.getElementById("bimbinganList").innerHTML = `<p class="text-gray-500">Belum ada data bimbingan.</p>`;
+    return;
+  }
+
+  let html = `<table class="min-w-full border-collapse border text-left">
+                <thead><tr class="bg-green-100">
+                  ${Object.keys(data[0]).map(h => `<th class="border px-2 py-1">${h}</th>`).join("")}
+                </tr></thead><tbody>`;
+  data.forEach(row => {
+    html += `<tr>${Object.values(row).map(v => `<td class="border px-2 py-1">${v}</td>`).join("")}</tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("bimbinganList").innerHTML = html;
+}
+
+// Jalankan saat halaman dimuat
+loadSiswaData();
+</script>
+</body>
+</html>
