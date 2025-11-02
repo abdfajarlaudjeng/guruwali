@@ -1,127 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>🔐 Sistem Multi-Role Login</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); width: 320px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; transition: background-color 0.3s; }
-        button:hover { background-color: #0056b3; }
-        .role-badge { display: inline-block; padding: 5px 10px; margin: 5px; border-radius: 3px; font-size: 0.8em; }
-        .siswa { background-color: #e0f7fa; color: #00796b; }
-        .guru { background-color: #fff3e0; color: #e65100; }
-        .admin { background-color: #fbe9e7; color: #bf360c; font-weight: bold; }
-        #message { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
+  <meta charset="UTF-8">
+  <title>🔐 Sistem Multi-Role Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      text-align: center;
+    }
+    h2 { color: #333; margin-bottom: 20px; }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover { background-color: #0056b3; }
+    .role-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      margin: 5px;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+    .siswa { background-color: #e0f7fa; color: #00796b; }
+    .guru { background-color: #fff3e0; color: #e65100; }
+    .admin { background-color: #fbe9e7; color: #bf360c; font-weight: bold; }
+    #message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  </style>
 </head>
 <body>
 
 <div class="login-container">
-    <h2>🔐 Multi-Role Login</h2>
-    <div id="message"></div>
+  <h2>🔐 Multi-Role Login</h2>
+  <div id="message"></div>
 
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        
-        <select id="role" required>
-            <option value="" disabled selected>Pilih Role Anda</option>
-            <option value="Siswa">Siswa</option>
-            <option value="Guru Wali">Guru Wali</option>
-            <option value="Kepala Sekolah">Kepala Sekolah</option>
-            <option value="Pengawas">Pengawas</option>
-            <option value="Super Admin">Super Admin</option>
-        </select>
-        
-        <button type="submit" id="loginButton">Login</button>
-    </form>
-    
-    <hr style="margin: 20px 0;">
-    <p style="font-size: 0.9em; color: #777;">🎯 Akun Demo (Username / Password)</p>
-    <div style="font-size: 0.9em; text-align: left;">
-        <span class="role-badge siswa">Siswa: siswa1 / pass123</span>
-        <span class="role-badge guru">Guru: guru1 / pass123</span>
-        <span class="role-badge admin">Admin: admin / admin123</span>
-    </div>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+
+    <select id="role" required>
+      <option value="" disabled selected>Pilih Role Anda</option>
+      <option value="Siswa">Siswa</option>
+      <option value="Guru Wali">Guru Wali</option>
+      <option value="Kepala Sekolah">Kepala Sekolah</option>
+      <option value="Pengawas">Pengawas</option>
+      <option value="Super Admin">Super Admin</option>
+    </select>
+
+    <button type="submit" id="loginButton">Login</button>
+  </form>
+
+  <hr style="margin: 20px 0;">
+  <p style="font-size: 0.9em; color: #777;">🎯 Akun Demo (Username / Password)</p>
+  <div style="font-size: 0.9em; text-align: left;">
+    <span class="role-badge siswa">Siswa: siswa1 / pass123</span><br>
+    <span class="role-badge guru">Guru: guru1 / pass123</span><br>
+    <span class="role-badge admin">Admin: admin / admin123</span>
+  </div>
 </div>
 
 <script>
-// !!! GANTI DENGAN URL WEB APP GAS ANDA YANG SUDAH DI-DEPLOY !!!
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxIEL2VC6t9ETvOZLHww6_ldWZufZjVbNp19w56IyLH_LzF6q24AehJGYI_QA1GFcmI/exec'; 
+// GANTI DENGAN URL WEB APP GAS ANDA
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxIEL2VC6t9ETvOZLHww6_ldWZufZjVbNp19w56IyLH_LzF6q24AehJGYI_QA1GFcmI/exec';
 
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const loginButton = document.getElementById('loginButton');
-    const messageDiv = document.getElementById('message');
-    
-    loginButton.disabled = true;
-    loginButton.textContent = 'Loading...';
-    messageDiv.style.display = 'none';
+  e.preventDefault();
+  const loginButton = document.getElementById('loginButton');
+  const messageDiv = document.getElementById('message');
 
-    const credentials = {
-        action: 'login', 
-        username: document.getElementById('username').value,
-        password: document.getElementById('password').value,
-        role: document.getElementById('role').value
-    };
+  loginButton.disabled = true;
+  loginButton.textContent = 'Loading...';
+  messageDiv.style.display = 'none';
 
-    try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials)
-        });
+  const credentials = {
+    action: 'login',
+    username: document.getElementById('username').value.trim(),
+    password: document.getElementById('password').value.trim(),
+    role: document.getElementById('role').value
+  };
 
-        const result = await response.json();
+  try {
+    const response = await fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
 
-        loginButton.disabled = false;
-        loginButton.textContent = 'Login';
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
 
-        messageDiv.textContent = result.message;
-        messageDiv.style.display = 'block';
+    loginButton.disabled = false;
+    loginButton.textContent = 'Login';
+    messageDiv.textContent = result.message;
+    messageDiv.style.display = 'block';
 
-        if (result.status === 'success') {
-            messageDiv.className = 'success';
-            
-            // Simpan data user di localStorage
-            localStorage.setItem('userRole', result.data.role);
-            localStorage.setItem('userId', result.data.id_user);
-            localStorage.setItem('userName', result.data.nama_lengkap);
-            // Simpan id_kelas untuk Guru Wali
-            if(result.data.id_kelas) {
-                localStorage.setItem('userKelasId', result.data.id_kelas);
-            }
+    if (result.status === 'success') {
+      messageDiv.className = 'success';
 
-            // Role-based Navigation
-            const roleMap = {
-                "Siswa": "siswa_dashboard.html",
-                "Guru Wali": "guru_dashboard.html",
-                "Kepala Sekolah": "admin_dashboard.html", 
-                "Pengawas": "admin_dashboard.html",
-                "Super Admin": "admin_dashboard.html"
-            };
-            
-            const dashboardPage = roleMap[result.data.role] || 'index.html';
-            window.location.href = dashboardPage;
+      // Simpan data user ke localStorage
+      localStorage.setItem('userRole', result.data.role);
+      localStorage.setItem('userId', result.data.id_user);
+      localStorage.setItem('userName', result.data.nama_lengkap);
+      if (result.data.id_kelas) localStorage.setItem('userKelasId', result.data.id_kelas);
 
-        } else {
-            messageDiv.className = 'error';
-        }
-
-    } catch (error) {
-        loginButton.disabled = false;
-        loginButton.textContent = 'Login';
-        messageDiv.className = 'error';
-        messageDiv.textContent = 'Terjadi kesalahan jaringan atau sistem.';
-        messageDiv.style.display = 'block';
-        console.error("Fetch Error:", error);
+      // Navigasi berdasarkan role
+      const roleMap = {
+        "Siswa": "siswa_dashboard.html",
+        "Guru Wali": "guru_dashboard.html",
+        "Kepala Sekolah": "admin_dashboard.html",
+        "Pengawas": "admin_dashboard.html",
+        "Super Admin": "admin_dashboard.html"
+      };
+      const dashboardPage = roleMap[result.data.role] || 'index.html';
+      window.location.href = dashboardPage;
+    } else {
+      messageDiv.className = 'error';
     }
+
+  } catch (error) {
+    loginButton.disabled = false;
+    loginButton.textContent = 'Login';
+    messageDiv.className = 'error';
+    messageDiv.textContent = 'Terjadi kesalahan jaringan atau sistem.';
+    messageDiv.style.display = 'block';
+    console.error("Fetch Error:", error);
+  }
 });
 </script>
+
 </body>
 </html>
