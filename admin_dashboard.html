@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚡ Dashboard Super Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        h1 { color: #bf360c; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; margin: 5px 0; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        /* ... (Tambahkan styling table dan modal dari respons sebelumnya di sini) ... */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f8f8f8; }
+        .logout-btn { float: right; margin-top: -50px; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefee; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .role-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+        .Siswa { background-color: #e0f7fa; color: #00796b; }
+        .Guru { background-color: #fff3e0; color: #e65100; }
+        .Kepala { background-color: #e8eaf6; color: #3f51b5; }
+        .Super { background-color: #fbe9e7; color: #bf360c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="btn btn-danger logout-btn" onclick="logout()">Logout</button>
+    <h1>⚡ Dashboard Super Admin</h1>
+    <p>Selamat datang, <span id="welcomeName">Admin</span>. Anda memiliki akses penuh ke manajemen user.</p>
+
+    <button class="btn btn-primary" onclick="openAddUserModal()">➕ Tambah User Baru</button>
+
+    <h2>Manajemen User</h2>
+    <div id="loading" style="text-align: center; padding: 20px;">Memuat data user...</div>
+    <table id="userTable" style="display: none;">
+        <thead>
+            <tr>
+                <th>ID User</th>
+                <th>Nama Lengkap</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>ID Kelas</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+        </tbody>
+    </table>
+</div>
+
+<div id="addUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddUserModal()">&times;</span>
+        <h3>Tambah User Baru</h3>
+        <form id="addUserForm">
+            <input type="text" id="add_nama_lengkap" placeholder="Nama Lengkap" required><br>
+            <input type="text" id="add_username" placeholder="Username" required><br>
+            <input type="password" id="add_password" placeholder="Password" required><br>
+            <select id="add_role" required>
+                <option value="" disabled selected>Pilih Role</option>
+                <option value="Siswa">Siswa</option>
+                <option value="Guru Wali">Guru Wali</option>
+                <option value="Kepala Sekolah">Kepala Sekolah</option>
+                <option value="Pengawas">Pengawas</option>
+                <option value="Super Admin">Super Admin</option>
+            </select><br>
+            <input type="text" id="add_id_kelas" placeholder="ID Kelas (Opsional)">
+            <button class="btn btn-primary" type="submit">Simpan User</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7sWpFBIbCaKSICPm1x9JmPadUYp_NSddI9zA4UQX2KNmIlw-U_M0vwm99hg4hUU0X/exec'; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const userRole = localStorage.getItem('userRole');
+        if (userRole !== 'Super Admin' && userRole !== 'Kepala Sekolah' && userRole !== 'Pengawas') {
+            alert('Akses Ditolak. Silakan login sebagai Admin/Kepsek/Pengawas.');
+            window.location.href = 'index.html';
+            return;
+        }
+        document.getElementById('welcomeName').textContent = localStorage.getItem('userName') || 'Admin';
+        loadUsers();
+    });
+
+    async function fetchData(action, method = 'GET', data = null) {
+        // Fungsi ini menangani GET (getAllUsers) dan POST (addUser, deleteUser)
+        let url = GAS_WEB_APP_URL;
+        let options = {
+            method: method,
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        if (method === 'GET') {
+            const params = new URLSearchParams({ action: action });
+            url += `?${params.toString()}`;
+        } else if (method === 'POST') {
+            options.body = JSON.stringify({ action: action, ...data });
+        }
+        
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            alert('Gagal berkomunikasi dengan server API: ' + error.message);
+            console.error('Fetch error:', error);
+            return { status: 'error', message: 'Gagal terhubung.' };
+        }
+    }
+
+    // READ
+    async function loadUsers() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('userTable').style.display = 'none';
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = ''; 
+
+        const result = await fetchData('getAllUsers', 'GET');
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('userTable').style.display = 'table';
+        
+        if (result.status === 'success' && result.data.length > 0) {
+            result.data.forEach(user => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = user.id_user;
+                row.insertCell().textContent = user.nama_lengkap;
+                row.insertCell().textContent = user.username;
+                
+                const roleCell = row.insertCell();
+                const roleClass = user.role.split(' ')[0];
+                roleCell.innerHTML = `<span class="role-badge ${roleClass}">${user.role}</span>`;
+                
+                row.insertCell().textContent = user.id_kelas || '-';
+
+                const actionCell = row.insertCell();
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'btn btn-danger btn-sm';
+                deleteButton.textContent = 'Hapus';
+                deleteButton.onclick = () => {
+                    if (confirm(`Anda yakin ingin menghapus user ${user.nama_lengkap} (${user.id_user})?`)) {
+                        deleteUser(user.id_user);
+                    }
+                };
+                actionCell.appendChild(deleteButton);
+            });
+        } else {
+            const row = tbody.insertRow();
+            row.insertCell(0).colSpan = 6;
+            row.cells[0].textContent = result.message || 'Gagal memuat data user.';
+        }
+    }
+
+    // CREATE
+    document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const userData = {
+            nama_lengkap: document.getElementById('add_nama_lengkap').value,
+            username: document.getElementById('add_username').value,
+            password: document.getElementById('add_password').value,
+            role: document.getElementById('add_role').value,
+            id_kelas: document.getElementById('add_id_kelas').value
+        };
+
+        const result = await fetchData('addUser', 'POST', { userData: userData });
+
+        if (result.status === 'success') {
+            alert(result.message);
+            closeAddUserModal();
+            loadUsers();
+        } else {
+            alert('Gagal menambah user: ' + result.message);
+        }
+    });
+
+    // DELETE
+    async function deleteUser(id_user) {
+        const result = await fetchData('deleteUser', 'POST', { id_user: id_user });
+
+        if (result.status === 'success') {
+            alert(result.message);
+            loadUsers();
+        } else {
+            alert('Gagal menghapus user: ' + result.message);
+        }
+    }
+
+    // UI functions
+    function openAddUserModal() { document.getElementById('addUserModal').style.display = 'block'; }
+    function closeAddUserModal() { document.getElementById('addUserModal').style.display = 'none'; document.getElementById('addUserForm').reset(); }
+    function logout() { if (confirm("Anda yakin ingin keluar?")) { localStorage.clear(); window.location.href = 'index.html'; } }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('addUserModal')) { closeAddUserModal(); }
+    }
+</script>
+</body>
+</html>
